@@ -1,38 +1,40 @@
-#scripts QIIME2. 2022.2
-#Dr. Juan Alfredo Hernández García
-#Instituto Politécnico Nacional
-#Escuela Nacional de Ciencias Biológicas
-#Dpartamento de Microbiología
+# Scripts QIIME2. 2022.2 
+### Dr. Juan Alfredo Hernández García
+### Instituto Politécnico Nacional
+### Escuela Nacional de Ciencias Biológicas
+### Departamento de Microbiología
 
-`conda activate qiime2-2022.2.
 
+### Activamos el entorno de QIIME2
+`conda activate qiime2-2022.2.`
+```
 echo 'alias qiime2="source activate qiime2-2022.2"' >> $HOME/.bashrc
 echo 'alias picrust2="source activate picrust2"' >> $HOME/.bashrc
 source $HOME/.bashrc`
-
-#actualizamos conda
+```
+### Actualizamos conda
 `conda update conda`
 
-#enlistamos los comandos para conocer los ambientes de conda
+### Enlistamos los comandos para conocer los ambientes de conda
 `conda env list`
 
-#Actualizar todos los paquetes de conda (base)
+### Actualizar todos los paquetes de conda (base)
 `conda update conda --all`
 
-#Eliminar temporales y actualizar todo
-`conda clean --al
-conda update --all`
+` Eliminar temporales y actualizar todo`
+`conda clean --all`
+`conda update --all`
 _______________________________________________________________________________
 # **Preprocesamiento de datos metabarcoding 16S rRNA**
-#1.0 Obtención de datos
+## 1.0 Obtención de datos
 ## Tres posibles escenarios:
 MiSeq, un archivo por muestra
 `sampleA_S1_R1_001.fastq.gz
 sampleA_S1_R2_001.fastq.gz`
 
-find -maxdepth 1 -name "*fastq.gz" -type f | rename 's/_001//'
+`find -maxdepth 1 -name "*fastq.gz" -type f | rename 's/_001//'`
 
-##NextSeq, cuatro archivos por muestra, L001-L004
+## NextSeq, cuatro archivos por muestra, L001-L004
 ```
 sampleA_S1_L001_R1_001.fastq.gz
 sampleA_S1_L001_R2_001.fastq.gz
@@ -44,7 +46,7 @@ sampleA_S1_L004_R1_001.fastq.gz
 sampleA_S1_L004_R2_001.fastq.gz
 ```
 
-##Podemos concatenar los archivos unos por uno :(
+## Podemos concatenar los archivos unos por uno :(
 `cat sampleA_S1_L00?_R1* > sampleA_S1_L001_R1_001.fastq.gz
 cat sampleA_S1_L00?_R2* > sampleA_S1_L001_R2_001.fastq.gz`
 ## O podemos usar iteraciones para concatenar los archivos de las 4 líneas, L001-L004, de Illumina al formato `sampleA_S1_R1.fastq.gz` con el siguiente LOOP
@@ -57,28 +59,30 @@ cat ${i}*R2*.fastq.gz > ${i}_R2.fastq.gz
 done < <(ls *R1*gz | cut -d\_ -f1,2 | sort | uniq )
 ```
 
-#C) NextSeq, un archivo por muestra, L001
+### C) NextSeq, un archivo por muestra, L001
 ```
 sampleA_S1_L001_R1_001.fastq.gz
 sampleA_S1_L001_R2_001.fastq.gz
 ```
 ______________________________________________________________________________
-# Para los pasos siguientes pasos utilizaremos el siguiente set de prueba con lecturas pair-end de Illumina.
+### Para los pasos siguientes pasos utilizaremos el siguiente set de prueba con lecturas pair-end de Illumina.
 ``wget https://datos16s.s3.us-east-2.amazonaws.com/atg16s.tar.gz
 tar -zxvf atg16s.tar.gz && rm atg16s.tar.gz``
 
-#**Control de calidad**
+## _**Control de calidad**_
 Cada archivo fastq tiene cuatro lineas:
-1. Nombre de la secuencia (header - id del secuenciador, coordenadas del spot, flow-cell,
+  1. Nombre de la secuencia (header - id del secuenciador, coordenadas del spot, flow-cell,
 adaptador, etc.)
-2. Secuencia
-3. Espaciador (+)
-4. Valores de calidad: Q Score - alfanumérico.
-Para evaluar la calidad se podría evaluar los archivos de manera individual pero eso consumiría
+  2. Secuencia
+  3. Espaciador (+)
+  4. Valores de calidad: Q Score - alfanumérico.
+
+#### Para evaluar la calidad se podría evaluar los archivos de manera individual pero eso consumiría
 "mucho tiempo", por lo que es mejor tratarlo como un sólo archivo, ¿cómo lo haríamos?...
 
 Concatenamos todos los archivos .fastq en un solo y ejecutamos el comando `fastqc`.
 Creamos un folder para realizar el análisis de QIIME
+
 ```
 mkdir 01_qc
 source activate qc
@@ -89,7 +93,7 @@ conda deactivate
 rm all_fastqc.zip all.fq.gz
 ```
 
-# **IMPORTAR DATOS*
+# _**IMPORTAR DATOS**_
 ##Es necesario crear un archivo manifest donde se especifique sample-id, absolute-filepath y direction por cada uno de las muestras.
 # Colocamos todas nuestras secuencias en el directorio de dataset y ejecutamos el siguiente LOOP
 
@@ -106,9 +110,9 @@ echo "${name},\$PWD/${i}_2.fastq.gz,reverse" >> manifest.csv
 done
 ```
 
-#Se puede utilizar un plugin de Google Docs Sheets para verificar la integridad de nuestro archivo de metadatos: http://keemei.qiime.org/
-#QIIME2 utliza artefactos: * Artifacto = fastq + manifest * Tienen la extensión qza, qiime zip artifact
-#Si obtenemos algún error de conda en el entorno qiime2 en AWS.
+# Se puede utilizar un plugin de Google Docs Sheets para verificar la integridad de nuestro archivo de metadatos: http://keemei.qiime.org/
+# QIIME2 utliza artefactos: * Artifacto = fastq + manifest * Tienen la extensión qza, qiime zip artifact
+# Si obtenemos algún error de conda en el entorno qiime2 en AWS.
 ```
 mkdir -p 01_qc
 qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' \
@@ -121,10 +125,10 @@ qiime demux summarize \
 --i-data 01_qc/01_demux.qza \
 --o-visualization 01_qc/01_demux.qzv
 ```
-#Los archivos qzv son artefactos de visualización, se puede ver su contenido de manera local con:
+#### Los archivos qzv son artefactos de visualización, se puede ver su contenido de manera local con:
 `qiime tools view 01_qc/01_demux.qzv #te redirecciona a una página web`
 
-#**Quitar adaptadores**
+# **Quitar adaptadores**
 # 338F ACTCCTACGGGAGGCAGCA \
 # 806R GGACTACHVGGGTWTCTAAT
 ```
@@ -135,15 +139,14 @@ qiime cutadapt trim-paired \
 --p-front-r GGACTACHVGGGTWTCTAAT \
 --o-trimmed-sequences 01_qc/01_demux-trim.qza \
 --verbose
-```
+
 qiime demux summarize \
 --i-data 01_qc/01_demux-trim.qza \
 --o-visualization 01_qc/01_demux-trim.qzv
+```
+# qiime tools view 01_qc/01_demux-trim.qzv #te redirecciona a una página web
 
-`qiime tools view 01_qc/01_demux-trim.qzv #te redirecciona a una página web`
-
-
-#**Denoising - Eliminación de ruido**
+# **Denoising - Eliminación de ruido**
 Los pasos que realiza DADA2 son:
 * Filtrar y recortar
 * Dereplicar
@@ -185,10 +188,10 @@ qiime dada2 denoise-paired \
 
 `qiime tools view 02_dada2/rep-seqs.qzv #te redirecciona a una página web`
 
-# **Clasificación taxonómica**
-#1.- Usaremos greengenes data base
-#Pre-fitted sklearn-based taxonomy classifier
-
+## **Clasificación taxonómica**
+### 1.- Usaremos greengenes data base
+### Pre-fitted sklearn-based taxonomy classifier
+```
 `wget https://data.qiime2.org/2020.8/common/gg-13-8-99-515-806-nb-classifier.qza
 mkdir 03_taxonomy
 
@@ -203,7 +206,7 @@ qiime metadata tabulate \
 --o-visualization 03_taxonomy/03_dada2-taxonomy-sklearn.qzv
 
 qiime taxa barplot \
---i-table 02_dada2/table.qza \
+--i-table 02_dada2/table.qza I am running a few minutes late; my previous meeting is running over. 
 --i-taxonomy 03_taxonomy/03_dada2-taxonomy-sklearn.qza \
 --m-metadata-file metadata.tsv \
 --o-visualization 03_taxonomy/03_dada2-taxonomy-sklearn-barplots.qzv
@@ -238,14 +241,15 @@ qiime metadata tabulate \
 
 
 #Extraemos los datos de la columna 2 y 3, específicamente del tratamiento
-``echo 'id' > treatment.txt; awk '{print $2}' metadata.tsv | \
+`echo 'id' > treatment.txt; awk '{print $2}' metadata.tsv | \
 sort | uniq >> treatment.txt`
 
 `qiime taxa barplot \
 --i-table 03_taxonomy/03_dada2-tax-sk_Treatment.qza \
 --i-taxonomy 03_taxonomy/03_dada2-taxonomy-sklearn.qza \
 --m-metadata-file treatment.txt \
---o-visualization 03_taxonomy/03_dada2-tax-sk-barplots_Treatment.qzv
+--o-visualization 03_taxonomy/03_dada2-tax-sk-barplots_Treatment.qzv`
+
 `qiime tools view 03_taxonomy/03_dada2-tax-sk-barplots_Treatment.qzv #te redirecciona a una página web`
 
 `echo 'id' > treatment.txt; awk '{print $2}' metadata.tsv | \
@@ -256,13 +260,13 @@ sort | uniq >> treatment.txt`
 --i-taxonomy 03_taxonomy/03_dada2-taxonomy-sklearn.qza \
 --m-metadata-file treatment.txt \
 --o-visualization 03_taxonomy/03_dada2-tax-sk-barplots_Treatment.qzv
-`qiime tools view 03_taxonomy/03_dada2-tax-sk-barplots_Treatment.qzv #te redirecciona a una página web
+`qiime tools view 03_taxonomy/03_dada2-tax-sk-barplots_Treatment.qzv #te redirecciona a una página web`
+```
 
+# 2.- Usaremos _**SILVA**_ data base
 
-#2.- Usaremos **SILVA** data base
-
-#Pre-fitted sklearn-based taxonomy classifier
-
+## Pre-fitted sklearn-based taxonomy classifier
+```
 mkdir 03_taxonomy_SILVA
 
 qiime feature-classifier classify-sklearn \
@@ -305,3 +309,4 @@ qiime taxa barplot \
 --m-metadata-file treatment.txt \
 --o-visualization 03_taxonomy_SILVA/03_dada2-tax-sk-barplots_Treatment.qzv
 `qiime tools view 03_taxonomy_SILVA/03_dada2-tax-sk-barplots_Treatment.qzv #te redirecciona a una página web`
+```
