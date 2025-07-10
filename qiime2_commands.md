@@ -128,7 +128,8 @@ qiime demux summarize \
 #### Los archivos qzv son artefactos de visualización, se puede ver su contenido de manera local con:
 `qiime tools view 01_qc/01_demux.qzv #te redirecciona a una página web`
 
-# **Quitar adaptadores**
+# **Quitar adaptadores** e iniciadores 
+ac{a dejo un link de algunos iniciadores universales https://imr.bio/protocols.html#libAmp
 # 338F ACTCCTACGGGAGGCAGCA \
 # 806R GGACTACHVGGGTWTCTAAT
 ```
