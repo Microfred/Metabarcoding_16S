@@ -1,8 +1,8 @@
 # Scripts QIIME2. 2022.2 
-### Dr. Juan Alfredo Hernández García
-### Instituto Politécnico Nacional
-### Escuela Nacional de Ciencias Biológicas
-### Departamento de Microbiología
+Dr. Juan Alfredo Hernández García
+Instituto Politécnico Nacional
+Escuela Nacional de Ciencias Biológicas
+Departamento de Microbiología
 
 
 ### Activamos el entorno de QIIME2
